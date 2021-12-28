@@ -19,10 +19,12 @@ public class HandlerProvider {
     }
 
     public ChannelHandler[] getSerializePipeline() {
+        log.debug("AMS created");
         return new ChannelHandler[] {
                 new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
                 new ObjectEncoder(),
                 new AbstractMessageHandler(authService)
         };
+
     }
 }

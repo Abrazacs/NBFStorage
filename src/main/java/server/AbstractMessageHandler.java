@@ -23,17 +23,17 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
         this.authService = service;
     }
 
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        ctx.writeAndFlush(new FilesList(currentPath));
-    }
+//    @Override
+//    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+//        ctx.writeAndFlush(new FilesList(currentPath));
+//    }
 
     protected void channelRead0(ChannelHandlerContext ctx,
                                 AbstractMessage message) throws Exception {
         log.debug("received: {}", message);
         switch (message.getMessageType()) {
             case USER:
-                User user = (User) message;
+                User user = (User) message;;
                 checkUserAuthorization(ctx, user);
                 break;
             case FILE_REQUEST:
@@ -70,6 +70,7 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
     }
 
     private void checkUserAuthorization (ChannelHandlerContext ctx, User user) throws SQLException {
+        log.debug("checking auth");
         UserConfirmation confirmation = new UserConfirmation(
                 authService.isUserAuthorized(user)
         );
