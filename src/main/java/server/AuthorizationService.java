@@ -20,7 +20,7 @@ public class AuthorizationService {
     }
 
    boolean isUserAuthorized (User user) throws SQLException{
-        pStatement = connection.prepareStatement("SELEC * FROM users WHERE login = ? AND password = ?");
+        pStatement = connection.prepareStatement("SELECT * FROM users WHERE login = ? AND password = ?");
         pStatement.setString(1, user.getUserName());
         pStatement.setString(2, user.getUserPassword());
         return !rSet.wasNull();
