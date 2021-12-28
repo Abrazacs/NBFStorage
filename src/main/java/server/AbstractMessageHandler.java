@@ -6,6 +6,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 import messages.*;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,11 +23,6 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
         currentPath = Paths.get("serverFiles");
         this.authService = service;
     }
-
-//    @Override
-//    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-//        ctx.writeAndFlush(new FilesList(currentPath));
-//    }
 
     protected void channelRead0(ChannelHandlerContext ctx,
                                 AbstractMessage message) throws Exception {
@@ -56,17 +52,13 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
         }
     }
 
-    private void confirmRegistration(ChannelHandlerContext ctx, RegistrationRequest regRequest) {
-//        String login = regRequest.getLogin();
-//        String password = regRequest.getPassword();
-//        for (User authUsers: authService.getUserList()) {
-//            if (authUsers.getUserName().equals(login)){
-//                ctx.writeAndFlush(new RegistrationConfirmed(false));
-//                return;
-//            }
-//        }
-//        ctx.writeAndFlush(new RegistrationConfirmed(true));
-//        authService.addUser(login,password);
+    private void confirmRegistration(ChannelHandlerContext ctx, RegistrationRequest regRequest) throws SQLException {
+        String login = regRequest.getLogin();
+        String password = regRequest.getPassword();
+        if(!authService.isUserExist(login)) {
+            ctx.writeAndFlush(new RegistrationConfirmed(true));
+            authService.addUser(login, password);
+        }
     }
 
     private void checkUserAuthorization (ChannelHandlerContext ctx, User user) throws SQLException {
@@ -75,5 +67,15 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
                 authService.isUserAuthorized(user)
         );
         ctx.writeAndFlush(confirmation);
+        if (authService.isUserAuthorized(user)){
+            Path path = Paths.get("serverstorage/", user.getUserName());
+            try {
+                Files.createDirectories(path);
+                ctx.writeAndFlush(new FilesList(path));
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+
+        }
     }
 }

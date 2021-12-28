@@ -28,11 +28,21 @@ public class AuthorizationService {
         pStatement.setString(1, user.getUserName());
         pStatement.setString(2, user.getUserPassword());
         rSet = pStatement.executeQuery();
-        if (rSet == null) return false;
-        else return true;
+        return rSet == null ? false : true;
+   }
+
+   boolean isUserExist(String login) throws SQLException{
+       pStatement = connection.prepareStatement("SELECT * FROM users WHERE login = ?");
+       pStatement.setString(1, login);
+       rSet = pStatement.executeQuery();
+       return rSet == null ? false : true;
    }
 
 
-
-
+    public void addUser(String login, String password) throws SQLException {
+        pStatement = connection.prepareStatement("INSERT INTO users (login, password) VALUES (?,?)");
+        pStatement.setString(1,login);
+        pStatement.setString(2,password);
+        pStatement.executeUpdate();
+    }
 }
