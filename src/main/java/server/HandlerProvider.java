@@ -4,9 +4,12 @@ import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
+import lombok.extern.slf4j.Slf4j;
 
+
+import java.sql.SQLException;
+
+@Slf4j
 public class HandlerProvider {
 
     private final AuthorizationService authService;

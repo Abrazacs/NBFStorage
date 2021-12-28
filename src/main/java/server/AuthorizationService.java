@@ -3,34 +3,29 @@ package server;
 import lombok.Getter;
 import messages.User;
 
-import java.util.*;
+import java.sql.*;
+
 
 @Getter
 public class AuthorizationService {
+    private static Connection connection;
+    private static Statement statement;
+    private PreparedStatement pStatement;
+    private ResultSet rSet;
 
-    private List<User> userList;
-
-    public AuthorizationService(){
-        this.userList = new ArrayList<>(
-                Arrays.asList(
-                        new User("user1", "123"),
-                        new User("user2", "123"),
-                        new User("user3", "123")
-                )
-        );
+    public void start() throws SQLException {
+        this.connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/archive_users","Abrazacs","12_qswd_12" );
+        this.statement =  connection.createStatement();
 
     }
 
-   boolean isUserAuthorized (User user){
-       for (User authorizedUsers: userList) {
-           if (authorizedUsers.equals(user)) return true;
-       }
-       return false;
+   boolean isUserAuthorized (User user) throws SQLException{
+        pStatement = connection.prepareStatement("SELEC * FROM users WHERE login = ? AND password = ?");
+        pStatement.setString(1, user.getUserName());
+        pStatement.setString(2, user.getUserPassword());
+        return !rSet.wasNull();
    }
 
-   public void addUser (String login, String password){
-        userList.add(new User(login, password));
-   }
 
 
 

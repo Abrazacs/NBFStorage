@@ -10,12 +10,19 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
+import java.sql.SQLException;
+
 
 @Slf4j
 public class Server {
     public static void main(String[] args) {
-
-        HandlerProvider provider = new HandlerProvider(new AuthorizationService());
+        AuthorizationService authorizationService = new AuthorizationService();
+        try{
+            authorizationService.start();
+        } catch (SQLException e){
+            log.error("e=", e);
+        }
+        HandlerProvider provider = new HandlerProvider(authorizationService);
         EventLoopGroup auth = new NioEventLoopGroup(1);
         EventLoopGroup worker = new NioEventLoopGroup();
         try{

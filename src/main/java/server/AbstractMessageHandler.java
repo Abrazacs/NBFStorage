@@ -9,6 +9,7 @@ import messages.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 
 @Slf4j
 public class AbstractMessageHandler extends SimpleChannelInboundHandler<AbstractMessage> {
@@ -56,19 +57,19 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
     }
 
     private void confirmRegistration(ChannelHandlerContext ctx, RegistrationRequest regRequest) {
-        String login = regRequest.getLogin();
-        String password = regRequest.getPassword();
-        for (User authUsers: authService.getUserList()) {
-            if (authUsers.getUserName().equals(login)){
-                ctx.writeAndFlush(new RegistrationConfirmed(false));
-                return;
-            }
-        }
-        ctx.writeAndFlush(new RegistrationConfirmed(true));
-        authService.addUser(login,password);
+//        String login = regRequest.getLogin();
+//        String password = regRequest.getPassword();
+//        for (User authUsers: authService.getUserList()) {
+//            if (authUsers.getUserName().equals(login)){
+//                ctx.writeAndFlush(new RegistrationConfirmed(false));
+//                return;
+//            }
+//        }
+//        ctx.writeAndFlush(new RegistrationConfirmed(true));
+//        authService.addUser(login,password);
     }
 
-    private void checkUserAuthorization (ChannelHandlerContext ctx, User user) {
+    private void checkUserAuthorization (ChannelHandlerContext ctx, User user) throws SQLException {
         UserConfirmation confirmation = new UserConfirmation(
                 authService.isUserAuthorized(user)
         );
