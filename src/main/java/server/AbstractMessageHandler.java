@@ -55,9 +55,12 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
     private void confirmRegistration(ChannelHandlerContext ctx, RegistrationRequest regRequest) throws SQLException {
         String login = regRequest.getLogin();
         String password = regRequest.getPassword();
+        log.debug(login, " ", password);
         if(!authService.isUserExist(login)) {
             ctx.writeAndFlush(new RegistrationConfirmed(true));
             authService.addUser(login, password);
+        } else{
+            ctx.writeAndFlush(new RegistrationConfirmed(false));
         }
     }
 

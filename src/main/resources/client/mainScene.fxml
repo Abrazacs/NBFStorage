@@ -10,7 +10,7 @@
 <AnchorPane fx:id="mainScene" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
             prefHeight="410.0" prefWidth="755.0"
             xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.Controller">
-   <children>
+
       <ListView fx:id="clientViewField" layoutX="26.0" layoutY="26.0" prefHeight="330.0" prefWidth="287.0" />
       <ListView fx:id="serverViewField" layoutX="435.0" layoutY="26.0" prefHeight="330.0" prefWidth="287.0" />
       <Button fx:id="downloadButton" layoutX="343.0" layoutY="111.0" mnemonicParsing="false" onAction="#download" prefHeight="47.0" prefWidth="47.0" text="&lt;">
@@ -33,5 +33,5 @@
             <Font size="14.0" />
          </font>
       </Label>
-   </children>
+
 </AnchorPane>

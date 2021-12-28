@@ -43,6 +43,7 @@ public class Controller implements Initializable {
     public Button uploadButton;
     public TextField regLoginField;
     public PasswordField regPasswordField;
+    public Button regConfirmButton;
     private Stage stage;
     private Scene scene;
     private Path baseDir;
@@ -83,7 +84,11 @@ public class Controller implements Initializable {
                         break;
                     case USER_CONFIRMATION:
                         UserConfirmation confirmation = (UserConfirmation) message;
-                        checkConfirmation(confirmation);
+                        checkConfirmationOfAuthorization(confirmation);
+                        break;
+                    case REGISTRATION_CONFIRMED:
+                        RegistrationConfirmed regConf = (RegistrationConfirmed) message;
+                        isRegistrationConfirmed(regConf);
                         break;
                 }
             }
@@ -129,8 +134,9 @@ public class Controller implements Initializable {
         os.writeObject(user);
     }
 
-    private void checkConfirmation(UserConfirmation confirmation){
+    private void checkConfirmationOfAuthorization(UserConfirmation confirmation){
         if(confirmation.isAuthorized()){
+            baseDir = Paths.get(System.getProperty("user.home"));
             Platform.runLater(()->{
                 try {
                     Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("mainScene.fxml")));
@@ -160,7 +166,44 @@ public class Controller implements Initializable {
         stage.show();
     }
 
-    public void signIn(ActionEvent event) {
+    public void signIn(ActionEvent event) throws IOException {
+        String login = regLoginField.getText();
+        String password = regPasswordField.getText();
+        if (!login.isEmpty() && !password.isEmpty()){
+           os.writeObject(new RegistrationRequest(login,password));
+        }
+        else {
+            Platform.runLater(()->{
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("ERROR");
+                alert.setHeaderText("Please complete the form");
+                alert.showAndWait();
+            });
+        }
+
+    }
+
+    private void isRegistrationConfirmed (RegistrationConfirmed confirmation){
+        if(confirmation.isConfirmed()){
+            Platform.runLater(()->{
+                try {
+                    Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("client.fxml")));
+                    stage = (Stage) regConfirmButton.getScene().getWindow();
+                    scene = new Scene(root);
+                    stage.setScene(scene);
+                    stage.show();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            });
+        }else {
+            Platform.runLater(()->{
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("ERROR");
+                alert.setHeaderText("Registration has been failed. Please try again");
+                alert.showAndWait();
+            });
+        }
 
     }
 

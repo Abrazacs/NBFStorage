@@ -15,6 +15,6 @@ public class RegistrationRequest implements AbstractMessage{
 
     @Override
     public MessageType getMessageType() {
-        return null;
+        return MessageType.REGISTRATION_REQUEST;
     }
 }

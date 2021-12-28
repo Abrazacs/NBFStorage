@@ -22,20 +22,20 @@ public class AuthorizationService {
 
     }
 
-   boolean isUserAuthorized (User user) throws SQLException{
+   public boolean isUserAuthorized (User user) throws SQLException{
         log.debug("checking auth");
         pStatement = connection.prepareStatement("SELECT * FROM users WHERE login = ? AND password = ?");
         pStatement.setString(1, user.getUserName());
         pStatement.setString(2, user.getUserPassword());
         rSet = pStatement.executeQuery();
-        return rSet == null ? false : true;
+        return rSet.isBeforeFirst();
    }
 
-   boolean isUserExist(String login) throws SQLException{
+   public boolean isUserExist(String login) throws SQLException{
        pStatement = connection.prepareStatement("SELECT * FROM users WHERE login = ?");
        pStatement.setString(1, login);
        rSet = pStatement.executeQuery();
-       return rSet == null ? false : true;
+       return rSet.isBeforeFirst();
    }
 
 
