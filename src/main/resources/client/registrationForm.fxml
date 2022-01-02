@@ -5,8 +5,12 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="registrationForm" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="243.0" prefWidth="399.0" style="-fx-background-color: Crimson;" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.Controller">
-   <children>
+<AnchorPane fx:id="registrationForm"
+            maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+            minWidth="-Infinity" prefHeight="243.0" prefWidth="399.0"
+            style="-fx-background-color: Crimson;" xmlns="http://javafx.com/javafx/11.0.2"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.ControllerRegScene">
+
       <ImageView fitHeight="19.0" fitWidth="131.0" layoutX="78.0" layoutY="18.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@archive-logo.png" />
@@ -34,5 +38,5 @@
             <Font size="14.0" />
          </font>
       </Button>
-   </children>
+
 </AnchorPane>
