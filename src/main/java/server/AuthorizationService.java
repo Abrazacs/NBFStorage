@@ -16,8 +16,8 @@ public class AuthorizationService {
     private ResultSet rSet;
 
     public void start() throws SQLException {
-        this.connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/archive_users","root","12_qswd_12" );
-        this.statement =  connection.createStatement();
+        connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/archive_users","root","12_qswd_12" );
+        statement =  connection.createStatement();
         log.debug("db connected");
 
     }
@@ -44,5 +44,16 @@ public class AuthorizationService {
         pStatement.setString(1,login);
         pStatement.setString(2,password);
         pStatement.executeUpdate();
+    }
+
+    public void stop() {
+        try {
+            rSet.close();
+            pStatement.close();
+            statement.close();
+            connection.close();
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
     }
 }

@@ -1,13 +1,9 @@
 package client;
 
-import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
-import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
@@ -17,24 +13,17 @@ import lombok.Setter;
 import messages.*;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 @Getter
-public class ControllerLoginScene implements Initializable {
+public class ControllerLoginScene implements Initializable, MessageProcessor {
 
     public TextField loginInputField;
     public PasswordField passwordInputField;
     public Button enterButton;
     public AnchorPane loginScene;
+    @Setter
     private NetworkService networkService;
     private User user;
     @Setter
@@ -44,7 +33,7 @@ public class ControllerLoginScene implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        this.networkService = new NetworkService();
+        this.networkService = new NetworkService(this);
     }
 
     public void login(ActionEvent event) throws IOException {
@@ -54,39 +43,52 @@ public class ControllerLoginScene implements Initializable {
 
         user = new User(loginInputField.getText(), passwordInputField.getText());
         networkService.getOs().writeObject(user);
-        networkService.setStage(stage);
     }
 
-    public void showRegistrationForm(ActionEvent event) {
+    public void showRegistrationForm(ActionEvent event) throws IOException{
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("registrationForm.fxml"));
+        Scene scene = new Scene(loader.load());
+        stage.setScene(scene);
+        stage.show();
+        ControllerRegScene regScene = loader.getController();
+        regScene.setNetworkService(networkService);
+        networkService.setMsgProcessor(regScene);
+        regScene.setStage(stage);
     }
 
+    @Override
+    public void processMessage(AbstractMessage message) {
+        if (message.getMessageType().equals(MessageType.USER_CONFIRMATION)){
+            UserConfirmation confirmation = (UserConfirmation) message;
+            checkConfirmationOfAuthorization(confirmation);
+        }
+    }
 
-//
-//
-//
-//    private void isRegistrationConfirmed (RegistrationConfirmed confirmation){
-//        if(confirmation.isConfirmed()){
-//            Platform.runLater(()->{
-//                try {
-//                    Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("client.fxml")));
-//                    stage = (Stage) regConfirmButton.getScene().getWindow();
-//                    scene = new Scene(root);
-//                    stage.setScene(scene);
-//                    stage.show();
-//                }catch (IOException e){
-//                    e.printStackTrace();
-//                }
-//            });
-//        }else {
-//            Platform.runLater(()->{
-//                Alert alert = new Alert(Alert.AlertType.ERROR);
-//                alert.setTitle("ERROR");
-//                alert.setHeaderText("Registration has been failed. Please try again");
-//                alert.showAndWait();
-//            });
-//        }
-//
-//    }
+    private void checkConfirmationOfAuthorization(UserConfirmation confirmation) {
+        if(confirmation.isAuthorized()){
+            Platform.runLater(()->{
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("mainScene.fxml"));
+                    Scene scene = new Scene(loader.load());
+                    stage.setScene(scene);
+                    stage.show();
+                    ControllerMainScene mainScene = loader.getController();
+                    mainScene.setNetworkService(networkService);
+                    networkService.setMsgProcessor(mainScene);
+                    mainScene.launch();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            });
+        }else {
+            Platform.runLater(()->{
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("ERROR");
+                alert.setHeaderText("Wrong credentials");
+                alert.showAndWait();
+            });
+        }
+    }
 
 
 }

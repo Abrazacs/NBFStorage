@@ -17,10 +17,10 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
 
     private Path currentPath;
     private AuthorizationService authService;
+    private String userName;
 
 
     public AbstractMessageHandler(AuthorizationService service) {
-        currentPath = Paths.get("serverFiles");
         this.authService = service;
     }
 
@@ -49,6 +49,9 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
             case REGISTRATION_REQUEST:
                 RegistrationRequest regRequest = (RegistrationRequest) message;
                 confirmRegistration(ctx, regRequest);
+                break;
+            case FILES_LIST_REQUEST:
+                ctx.writeAndFlush(new FilesList(currentPath));
         }
     }
 
@@ -71,10 +74,10 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
         );
         ctx.writeAndFlush(confirmation);
         if (authService.isUserAuthorized(user)){
-            Path path = Paths.get("serverstorage/", user.getUserName());
+            userName = user.getUserName();
+            currentPath = Paths.get("serverstorage/", userName);
             try {
-                Files.createDirectories(path);
-                ctx.writeAndFlush(new FilesList(path));
+                Files.createDirectories(currentPath);
             } catch (IOException e){
                 e.printStackTrace();
             }

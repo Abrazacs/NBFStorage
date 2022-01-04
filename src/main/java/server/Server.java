@@ -41,8 +41,10 @@ public class Server {
         }catch (Exception e){
             log.error("e=", e);
         } finally {
+            authorizationService.stop();
             auth.shutdownGracefully();
             worker.shutdownGracefully();
+
         }
     }
 
