@@ -76,7 +76,7 @@ public class ControllerRegScene implements MessageProcessor{
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("ERROR");
                 alert.setHeaderText("Registration has been failed. Please try again");
-                alert.showAndWait();
+                alert.show();
             });
         }
     }

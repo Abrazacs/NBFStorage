@@ -2,13 +2,10 @@ package client;
 
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
-import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import messages.*;
 
 import java.io.IOException;
@@ -17,10 +14,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 
-@Getter
+@Getter @Slf4j
 public class NetworkService {
     private ObjectEncoderOutputStream os;
     private ObjectDecoderInputStream is;
+    @Setter
     private Path baseDir;
     @Setter
     private MessageProcessor msgProcessor;
@@ -36,9 +34,11 @@ public class NetworkService {
             Thread thread = new Thread(this::read);
             thread.setDaemon(true);
             thread.start();
-        }catch (
-                IOException e){
-            e.printStackTrace();
+        }catch (IOException e){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("No connection");
+            alert.setContentText("Server is offline. Please try again later");
+            alert.show();
         }
     }
 
@@ -49,7 +49,7 @@ public class NetworkService {
                 msgProcessor.processMessage(message);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.info("e=", e);
         }
     }
 

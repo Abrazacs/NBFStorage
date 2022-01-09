@@ -15,6 +15,7 @@ import java.sql.SQLException;
 @Slf4j
 public class AbstractMessageHandler extends SimpleChannelInboundHandler<AbstractMessage> {
 
+    private final Path ROOT_PATH = Paths.get("serverstorage");
     private Path currentPath;
     private AuthorizationService authService;
     private String userName;
@@ -52,6 +53,26 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
                 break;
             case FILES_LIST_REQUEST:
                 ctx.writeAndFlush(new FilesList(currentPath));
+                break;
+            case CHANGE_DIR:
+                ChangeDir changeDir = (ChangeDir) message;
+                Path path =currentPath.resolve(changeDir.getItemName());
+                if (Files.isDirectory(path)){
+                    currentPath = path;
+                    ctx.writeAndFlush(new FilesList(currentPath));
+                }
+                break;
+            case CHANGE_DIR_UP:
+                if(!currentPath.getParent().equals(ROOT_PATH)){
+                    currentPath = currentPath.getParent();
+                    ctx.writeAndFlush(new FilesList(currentPath));
+                }
+                break;
+            case CREATE_NEW_FOLDER:
+                NewFolder folder = (NewFolder) message;
+                Files.createDirectory(currentPath.resolve(folder.getFolderName()));
+                ctx.writeAndFlush(new FilesList(currentPath));
+                break;
         }
     }
 
@@ -79,7 +100,7 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
             try {
                 Files.createDirectories(currentPath);
             } catch (IOException e){
-                e.printStackTrace();
+               log.error("e=", e);
             }
 
         }
