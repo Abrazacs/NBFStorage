@@ -2,6 +2,7 @@ package client;
 
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,11 +35,13 @@ public class NetworkService {
             Thread thread = new Thread(this::read);
             thread.setDaemon(true);
             thread.start();
-        }catch (IOException e){
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("No connection");
-            alert.setContentText("Server is offline. Please try again later");
-            alert.show();
+        }catch (IOException e) {
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("No connection");
+                alert.setContentText("Server is offline. Please try again later");
+                alert.show();
+            });
         }
     }
 
@@ -52,7 +55,6 @@ public class NetworkService {
             log.info("e=", e);
         }
     }
-
 
 
     public void sendMessage (AbstractMessage message) throws IOException{
