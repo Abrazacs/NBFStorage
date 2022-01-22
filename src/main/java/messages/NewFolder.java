@@ -1,7 +1,7 @@
 package messages;
 
 
-import client.NetworkService;
+
 import lombok.Getter;
 
 public class NewFolder implements AbstractMessage{

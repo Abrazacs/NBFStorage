@@ -9,8 +9,9 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="loginScene" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="367.0" prefWidth="746.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.ControllerLoginScene">
-   <children>
+<AnchorPane fx:id="loginScene" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="367.0" minWidth="-Infinity" prefHeight="367.0" prefWidth="746.0"
+            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="client.ControllerLoginScene">
       <ImageView fitHeight="374.0" fitWidth="748.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@Background.png" />
@@ -47,5 +48,4 @@
             <Font name="Arial Black" size="16.0" />
          </font>
       </Label>
-   </children>
 </AnchorPane>

@@ -8,7 +8,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
-import lombok.Getter;
 import lombok.Setter;
 import messages.*;
 
@@ -31,35 +30,6 @@ public class ControllerMainScene implements MessageProcessor {
     @Setter
     private NetworkService networkService;
 
-
-    public void download(ActionEvent event) throws IOException {
-        String file = (String) serverViewField.getSelectionModel().getSelectedItem();
-        networkService.getOs().writeObject(new FileRequest(file));
-    }
-
-    public void upload(ActionEvent event) throws IOException{
-        String file = (String) clientViewField.getSelectionModel().getSelectedItem();
-        Path filePath = networkService.getBaseDir().resolve(file);
-        networkService.getOs().writeObject(new FileMessage(filePath));
-    }
-
-
-
-    private List<String> getFileNames() {
-        try {
-            return Files.list(networkService.getBaseDir())
-                    .map(p -> p.getFileName().toString())
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            return new ArrayList<>();
-        }
-    }
-
-//    public List<FileInfo> getClientFiles() throws IOException {
-//        return Files.list(networkService.getBaseDir())
-//                .map(FileInfo::new)
-//                .collect(Collectors.toList());
-//    }
 
     public void launch () throws  IOException{
         fillView(getFileNames(),clientViewField);
@@ -89,6 +59,36 @@ public class ControllerMainScene implements MessageProcessor {
 
     }
 
+    public void download(ActionEvent event) throws IOException {
+        String file = (String) serverViewField.getSelectionModel().getSelectedItem();
+        networkService.sendMessage(new FileRequest(file));
+    }
+
+    public void upload(ActionEvent event) throws IOException{
+        String file = (String) clientViewField.getSelectionModel().getSelectedItem();
+        Path filePath = networkService.getBaseDir().resolve(file);
+        if (filePath.toFile().length()<= 1048576)
+            networkService.sendMessage(new FileMessage(filePath));
+        else {
+            networkService.sendBigObject(filePath);
+        }
+    }
+
+
+
+    private List<String> getFileNames() {
+        try {
+            return Files.list(networkService.getBaseDir())
+                    .map(p -> p.getFileName().toString())
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
+
+
+
     @Override
     public void processMessage(AbstractMessage message){
         switch (message.getMessageType()){
@@ -113,9 +113,6 @@ public class ControllerMainScene implements MessageProcessor {
        view.getItems().addAll(list);
     }
 
-    private void clickOnTheView (){
-
-    }
 
     public void changeDirOneLevelUp(ActionEvent event) {
         if(!networkService.getBaseDir().getParent().equals(null)){

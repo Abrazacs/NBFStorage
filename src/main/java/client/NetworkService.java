@@ -9,7 +9,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import messages.*;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -62,7 +62,33 @@ public class NetworkService {
     }
 
 
+    public void sendBigObject (Path path) throws IOException{
+        sendMessage(new BigObjectStart());
 
+        int partOfTheObjectSize = 1024*1000; // standard size of the file for ObjectDecoder
+        byte[] buffer = new byte[partOfTheObjectSize];
+        int counter = 1;
+        String fileName = path.toFile().getName();
+
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(path.toFile()))){
+            while (bis.read(buffer) > 0){
+                String partOfTheFileName = fileName + counter;
+                File partOfTheFile = new File(
+                        path.toFile().getParent(),
+                        partOfTheFileName);
+                try (FileOutputStream fos = new FileOutputStream(partOfTheFile)){
+                    fos.write(buffer);
+                }
+                sendMessage(new FileMessage(partOfTheFile.toPath()));
+                partOfTheFile.delete();
+                counter++;
+            }
+            sendMessage(new BigObjectEnd(fileName));
+
+        }catch (IOException e){
+            log.info("e=", e);
+        }
+    }
 
 
 }

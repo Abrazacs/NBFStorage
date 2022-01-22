@@ -6,19 +6,27 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 import messages.*;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class AbstractMessageHandler extends SimpleChannelInboundHandler<AbstractMessage> {
 
     private final Path ROOT_PATH = Paths.get("serverstorage");
     private Path currentPath;
+    private Path desiredPath;
     private AuthorizationService authService;
     private String userName;
+    private boolean smallFile = true;
 
 
     public AbstractMessageHandler(AuthorizationService service) {
@@ -45,7 +53,8 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
                         currentPath.resolve(fileMessage.getFileName()),
                         fileMessage.getBytes()
                 );
-                ctx.writeAndFlush(new FilesList(currentPath));
+                if(smallFile)
+                    ctx.writeAndFlush(new FilesList(currentPath));
                 break;
             case REGISTRATION_REQUEST:
                 RegistrationRequest regRequest = (RegistrationRequest) message;
@@ -73,7 +82,54 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
                 Files.createDirectory(currentPath.resolve(folder.getFolderName()));
                 ctx.writeAndFlush(new FilesList(currentPath));
                 break;
+            case BIG_OBJECT_STAR_NOTIFICATION:
+                smallFile = false;
+                desiredPath = currentPath;
+                currentPath = Files.createDirectory(ROOT_PATH.resolve(userName).resolve("temp"));
+                break;
+            case BIG_OBJECT_END_NOTIFICATION:
+                smallFile = true;
+                BigObjectEnd end = (BigObjectEnd) message;
+                String fileName = end.getFileName();
+                assemblyFile(desiredPath, fileName);
+                deleteTempDir();
+                currentPath = desiredPath;
+                ctx.writeAndFlush(new FilesList(currentPath));
+                break;
         }
+    }
+
+    private void deleteTempDir() {
+        List<File> fileList = receiveListOfFiles();
+        for (File f: fileList){
+            f.delete();
+        }
+        currentPath.toFile().delete();
+    }
+
+    private void assemblyFile(Path desiredPath, String fileName) {
+        List<File> fileList = receiveListOfFiles();
+        File file = new File(desiredPath.toString(),fileName);
+        try(BufferedOutputStream assemblyStream = new BufferedOutputStream(new FileOutputStream(file))){
+            for (File f: fileList){
+                Files.copy(f.toPath(),assemblyStream);
+            }
+        }catch (IOException e){
+            log.info("e=", e);
+        }
+
+    }
+
+    private List<File> receiveListOfFiles() {
+        try {
+            List<File> fileList = Files.list(currentPath).
+                    map(p -> p.toFile()).
+                    collect(Collectors.toList());
+            return fileList;
+        } catch (IOException e){
+            log.info("e=", e);
+        }
+        return new ArrayList<File>();
     }
 
     private void confirmRegistration(ChannelHandlerContext ctx, RegistrationRequest regRequest) throws SQLException {
@@ -96,7 +152,7 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
         ctx.writeAndFlush(confirmation);
         if (authService.isUserAuthorized(user)){
             userName = user.getUserName();
-            currentPath = Paths.get("serverstorage/", userName);
+            currentPath = ROOT_PATH.resolve(userName);
             try {
                 Files.createDirectories(currentPath);
             } catch (IOException e){
