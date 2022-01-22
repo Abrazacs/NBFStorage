@@ -11,6 +11,9 @@ import javafx.stage.Stage;
 import lombok.Setter;
 import messages.*;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,6 +28,7 @@ public class ControllerMainScene implements MessageProcessor {
     public Button uploadButton;
     public Button changeDir;
     public Button changeServerDir;
+    private boolean smallFile = true;
 
 
     @Setter
@@ -38,9 +42,9 @@ public class ControllerMainScene implements MessageProcessor {
         clientViewField.setOnMouseClicked(e -> {
             if (e.getClickCount() == 2) {
                 String file = (String) clientViewField.getSelectionModel().getSelectedItem();
-                Path path = networkService.getBaseDir().resolve(file);
+                Path path = networkService.getCurrentDir().resolve(file);
                 if (Files.isDirectory(path)) {
-                    networkService.setBaseDir(path);
+                    networkService.setCurrentDir(path);
                     fillView(getFileNames(), clientViewField);
                 }
             }
@@ -66,7 +70,7 @@ public class ControllerMainScene implements MessageProcessor {
 
     public void upload(ActionEvent event) throws IOException{
         String file = (String) clientViewField.getSelectionModel().getSelectedItem();
-        Path filePath = networkService.getBaseDir().resolve(file);
+        Path filePath = networkService.getCurrentDir().resolve(file);
         if (filePath.toFile().length()<= 1048576)
             networkService.sendMessage(new FileMessage(filePath));
         else {
@@ -78,7 +82,7 @@ public class ControllerMainScene implements MessageProcessor {
 
     private List<String> getFileNames() {
         try {
-            return Files.list(networkService.getBaseDir())
+            return Files.list(networkService.getCurrentDir())
                     .map(p -> p.getFileName().toString())
                     .collect(Collectors.toList());
         } catch (Exception e) {
@@ -99,13 +103,69 @@ public class ControllerMainScene implements MessageProcessor {
             case FILE:
                 FileMessage file = (FileMessage) message;
                 try {
-                    Files.write(networkService.getBaseDir().resolve(file.getFileName()), file.getBytes());
+                    Files.write(networkService.getCurrentDir().resolve(file.getFileName()), file.getBytes());
                 }catch (IOException e){
                     e.printStackTrace();
                 }
+                if(smallFile){
+                    Platform.runLater(()->fillView(getFileNames(), clientViewField));
+                }
+                break;
+            case BIG_OBJECT_STAR_NOTIFICATION:
+                smallFile = false;
+                networkService.setDesiredDir(networkService.getCurrentDir());
+                try {
+                    networkService.setCurrentDir(
+                            Files.createDirectory(
+                                    networkService.getCurrentDir().resolve("tempNBFS"))
+                        );
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+                break;
+            case BIG_OBJECT_END_NOTIFICATION:
+                BigObjectEnd end = (BigObjectEnd) message;
+                String fileName = end.getFileName();
+                assemblyFile(networkService.getDesiredDir(),fileName);
+                deleteTempDir();
+                networkService.setCurrentDir(
+                        networkService.getDesiredDir());
                 Platform.runLater(()->fillView(getFileNames(), clientViewField));
                 break;
         }
+    }
+
+    private void deleteTempDir() {
+        List<File> fileList = receiveListOfFiles();
+        for (File f: fileList){
+            f.delete();
+        }
+        networkService.getCurrentDir().toFile().delete();
+    }
+
+    private void assemblyFile(Path desiredDir, String fileName) {
+        List<File> fileList = receiveListOfFiles();
+        File file = new File(
+                desiredDir.toString(),fileName);
+        try(BufferedOutputStream assemblyStream = new BufferedOutputStream(new FileOutputStream(file))){
+            for (File f: fileList){
+                Files.copy(f.toPath(),assemblyStream);
+            }
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    private List<File> receiveListOfFiles() {
+        try {
+            List<File> fileList = Files.list(networkService.getCurrentDir()).
+                    map(p -> p.toFile()).
+                    collect(Collectors.toList());
+            return fileList;
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        return new ArrayList<File>();
     }
 
     private void fillView(List<String> list, ListView view) {
@@ -115,8 +175,8 @@ public class ControllerMainScene implements MessageProcessor {
 
 
     public void changeDirOneLevelUp(ActionEvent event) {
-        if(!networkService.getBaseDir().getParent().equals(null)){
-            networkService.setBaseDir(networkService.getBaseDir().getParent());
+        if(!networkService.getCurrentDir().getParent().equals(null)){
+            networkService.setCurrentDir(networkService.getCurrentDir().getParent());
             fillView(getFileNames(), clientViewField);
         }
     }

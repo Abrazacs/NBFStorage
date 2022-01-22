@@ -6,10 +6,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 import messages.*;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,9 +40,7 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
                 break;
             case FILE_REQUEST:
                 FileRequest req = (FileRequest) message;
-                ctx.writeAndFlush(
-                        new FileMessage(currentPath.resolve(req.getFileName()))
-                );
+                sendFile(req, ctx);
                 break;
             case FILE:
                 FileMessage fileMessage = (FileMessage) message;
@@ -97,6 +92,53 @@ public class AbstractMessageHandler extends SimpleChannelInboundHandler<Abstract
                 ctx.writeAndFlush(new FilesList(currentPath));
                 break;
         }
+    }
+
+    private void sendFile(FileRequest request, ChannelHandlerContext ctx){
+      Path file = currentPath.resolve(request.getFileName());
+        if(file.toFile().length()<=1024*1000){
+          try{
+              ctx.writeAndFlush(
+                  new FileMessage(file)
+              );
+          }catch (IOException e){
+              log.info("e=", e);
+          }
+        }else{
+            sendBigObject(file, ctx);
+        }
+    }
+
+    private void sendBigObject(Path file, ChannelHandlerContext ctx) {
+        ctx.writeAndFlush(new BigObjectStart());
+        log.debug("BigObjectStartNotification");
+
+        int partOfTheObjectSize = 1024*1000;
+        byte[] buffer = new byte[partOfTheObjectSize];
+        int counter = 1;
+        String fileName = file.toFile().getName();
+
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file.toFile()))){
+            while (bis.read(buffer) > 0){
+                String partOfTheFileName = fileName + counter;
+                File partOfTheFile = new File(
+                        file.toFile().getParent(),
+                        partOfTheFileName);
+                try (FileOutputStream fos = new FileOutputStream(partOfTheFile)){
+                    fos.write(buffer);
+                }
+                log.debug("partOfTheFile");
+                ctx.writeAndFlush(new FileMessage(partOfTheFile.toPath()));
+                partOfTheFile.delete();
+                counter++;
+            }
+            log.debug("BigObjectEndNotification");
+            ctx.writeAndFlush(new BigObjectEnd(fileName));
+
+        }catch (IOException e){
+            log.info("e=", e);
+        }
+
     }
 
     private void deleteTempDir() {

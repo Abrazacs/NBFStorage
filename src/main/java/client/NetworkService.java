@@ -20,15 +20,18 @@ public class NetworkService {
     private ObjectEncoderOutputStream os;
     private ObjectDecoderInputStream is;
     @Setter
-    private Path baseDir;
+    private Path currentDir;
+    @Setter
+    private Path desiredDir;
     @Setter
     private MessageProcessor msgProcessor;
+
 
 
     public NetworkService(MessageProcessor msgProcessor){
         try {
             Socket socket = new Socket("localhost", 8189);
-            baseDir = Paths.get(System.getProperty("user.home"));
+            currentDir = Paths.get(System.getProperty("user.home"));
             this.msgProcessor = msgProcessor;
             os = new ObjectEncoderOutputStream(socket.getOutputStream());
             is = new ObjectDecoderInputStream(socket.getInputStream());
@@ -65,7 +68,7 @@ public class NetworkService {
     public void sendBigObject (Path path) throws IOException{
         sendMessage(new BigObjectStart());
 
-        int partOfTheObjectSize = 1024*1000; // standard size of the file for ObjectDecoder
+        int partOfTheObjectSize = 1024*1000;
         byte[] buffer = new byte[partOfTheObjectSize];
         int counter = 1;
         String fileName = path.toFile().getName();
