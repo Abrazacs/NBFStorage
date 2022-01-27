@@ -3,35 +3,61 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
+<AnchorPane fx:id="mainScene" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="853.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.ControllerMainScene">
+   <ImageView fitHeight="480.0" fitWidth="900.0" pickOnBounds="true" preserveRatio="true">
+      <image>
+         <Image url="@Background2.png" />
+      </image>
+   </ImageView>
 
-<AnchorPane fx:id="mainScene" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-            prefHeight="410.0" prefWidth="755.0"
-            xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.Controller">
-
-      <ListView fx:id="clientViewField" layoutX="26.0" layoutY="26.0" prefHeight="330.0" prefWidth="287.0" />
-      <ListView fx:id="serverViewField" layoutX="435.0" layoutY="26.0" prefHeight="330.0" prefWidth="287.0" />
-      <Button fx:id="downloadButton" layoutX="343.0" layoutY="111.0" mnemonicParsing="false" onAction="#download" prefHeight="47.0" prefWidth="47.0" text="&lt;">
+      <ListView fx:id="clientViewField" layoutX="68.0" layoutY="45.0" prefHeight="330.0" prefWidth="287.0" style="-fx-background-radius: 15;" />
+      <ListView fx:id="serverViewField" layoutX="515.0" layoutY="45.0" prefHeight="330.0" prefWidth="287.0" style="-fx-background-radius: 15;" />
+      <Button fx:id="downloadButton" layoutX="413.0" layoutY="148.0" mnemonicParsing="false" onAction="#download" prefHeight="47.0" prefWidth="47.0" style="-fx-background-radius: 5;" text="&lt;">
          <font>
-            <Font size="14.0" />
+            <Font name="Arial Black" size="14.0" />
          </font>
       </Button>
-      <Button fx:id="uploadButton" layoutX="343.0" layoutY="182.0" mnemonicParsing="false" onAction="#upload" prefHeight="47.0" prefWidth="47.0" text="&gt;">
+      <Button fx:id="uploadButton" layoutX="413.0" layoutY="224.0" mnemonicParsing="false" onAction="#upload" prefHeight="47.0" prefWidth="47.0" text="&gt;">
          <font>
-            <Font size="14.0" />
+            <Font name="Arial Black" size="14.0" />
          </font>
       </Button>
-      <Label alignment="CENTER" layoutX="26.0" layoutY="369.0" prefHeight="18.0" prefWidth="287.0" text="Client files">
+      <Label alignment="CENTER" layoutX="68.0" layoutY="16.0" prefHeight="18.0" prefWidth="287.0" text="Client files" textFill="WHITE">
          <font>
-            <Font size="14.0" />
+            <Font name="Arial Black" size="14.0" />
          </font>
       </Label>
-      <Label alignment="CENTER" layoutX="435.0" layoutY="369.0" prefHeight="18.0" prefWidth="287.0" text="Files on the server">
+      <Label alignment="CENTER" layoutX="515.0" layoutY="16.0" prefHeight="18.0" prefWidth="287.0" text="Files on the server">
          <font>
-            <Font size="14.0" />
+            <Font name="Arial Black" size="14.0" />
          </font>
       </Label>
+   <Button fx:id="changeDir" layoutX="188.0" layoutY="388.0" mnemonicParsing="false" onAction="#changeDirOneLevelUp" prefHeight="47.0" prefWidth="47.0" style="-fx-background-radius: 5;" text="UP" textAlignment="CENTER">
+      <font>
+         <Font name="Arial Black" size="14.0" />
+      </font>
+   </Button>
+   <Button fx:id="changeServerDir" layoutX="576.0" layoutY="388.0" mnemonicParsing="false" onAction="#changeServerDirUp" prefHeight="47.0" prefWidth="47.0" style="-fx-background-radius: 5;" text="UP" textAlignment="CENTER">
+      <font>
+         <Font name="Arial Black" size="14.0" />
+      </font>
+   </Button>
+   <Button fx:id="newFolder" layoutX="703.0" layoutY="388.0" mnemonicParsing="false" onAction="#createNewFolderWindow" prefHeight="47.0" prefWidth="47.0" style="-fx-background-radius: 5;" textAlignment="CENTER">
+      <font>
+         <Font size="14.0" />
+      </font>
+      <graphic>
+         <ImageView fitHeight="30.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+            <image>
+               <Image url="@FolderVector.png" />
+            </image>
+         </ImageView>
+      </graphic>
+   </Button>
 
 </AnchorPane>

@@ -3,6 +3,7 @@ package client;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+
 public class FileInfo {
     private final String fileName;
     private final boolean isDirectory;
@@ -28,5 +29,10 @@ public class FileInfo {
 
     public long getSize() {
         return size;
+    }
+
+    @Override
+    public String toString() {
+        return  fileName;
     }
 }
